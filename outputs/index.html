@@ -1,0 +1,895 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HelioGrid | Operational Intelligence for SaaS Teams</title>
+  <meta name="description" content="A single-file SaaS website for HelioGrid, an operational intelligence platform.">
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f7f3ea;
+      --muted: #b9b1a4;
+      --soft: #efe2c9;
+      --line: rgba(255,255,255,.14);
+      --line-strong: rgba(255,255,255,.24);
+      --shadow: 0 24px 90px rgba(0,0,0,.42);
+      --green: #88f0b0;
+      --lime: #d8ff67;
+      --pink: #ff6fa8;
+      --amber: #ffc766;
+      --blue: #78d8ff;
+      --navy: #101723;
+      --charcoal: #0d1117;
+      --panel: rgba(255,255,255,.075);
+      --panel2: rgba(255,255,255,.115);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 18% 7%, rgba(255,111,168,.24), transparent 28rem),
+        radial-gradient(circle at 83% 12%, rgba(120,216,255,.22), transparent 25rem),
+        linear-gradient(135deg, #08090c 0%, #101723 42%, #17120d 100%);
+      color: var(--ink);
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .42;
+      mix-blend-mode: overlay;
+      background-image:
+        linear-gradient(115deg, rgba(255,255,255,.06), transparent 30%),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 1px, transparent 1px 4px);
+      z-index: 10;
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 36px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 14px;
+      z-index: 20;
+      margin-top: 14px;
+    }
+
+    .nav {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 18px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(8,9,12,.62);
+      backdrop-filter: blur(22px) saturate(1.35);
+      box-shadow: 0 18px 52px rgba(0,0,0,.22);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      position: relative;
+      background:
+        conic-gradient(from 180deg, var(--lime), var(--blue), var(--pink), var(--amber), var(--lime));
+      box-shadow: 0 0 36px rgba(216,255,103,.26);
+    }
+
+    .mark:after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border-radius: 5px;
+      background: #101217;
+      border: 1px solid rgba(255,255,255,.28);
+    }
+
+    .navlinks {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .navlinks a {
+      color: var(--muted);
+      font-size: 14px;
+      padding: 9px 12px;
+      border-radius: 7px;
+      transition: background .2s, color .2s;
+      white-space: nowrap;
+    }
+
+    .navlinks a:hover { color: var(--ink); background: rgba(255,255,255,.08); }
+
+    .nav-actions { display: flex; gap: 8px; align-items: center; }
+    .btn {
+      border: 1px solid var(--line-strong);
+      border-radius: 7px;
+      color: var(--ink);
+      background: rgba(255,255,255,.08);
+      padding: 10px 14px;
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform .18s, background .18s, border-color .18s, box-shadow .18s;
+      white-space: nowrap;
+    }
+
+    .btn:hover { transform: translateY(-1px); background: rgba(255,255,255,.13); border-color: rgba(255,255,255,.32); }
+    .btn.primary {
+      background: linear-gradient(135deg, #efff95, #8af0bd 42%, #7ddfff);
+      color: #08100d;
+      border-color: transparent;
+      font-weight: 800;
+      box-shadow: 0 14px 46px rgba(120,216,255,.23);
+    }
+
+    .hero {
+      min-height: calc(100svh - 28px);
+      display: grid;
+      grid-template-columns: minmax(0, .94fr) minmax(420px, 1.06fr);
+      gap: 34px;
+      align-items: center;
+      padding: 72px 0 34px;
+      position: relative;
+    }
+
+    .hero-copy { padding: 42px 0 38px; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.07);
+      border-radius: 999px;
+      padding: 7px 11px;
+      color: var(--soft);
+      font-size: 13px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 7px rgba(136,240,176,.13);
+    }
+
+    h1 {
+      margin: 18px 0 18px;
+      max-width: 800px;
+      font-size: clamp(48px, 7.4vw, 106px);
+      line-height: .88;
+      letter-spacing: 0;
+    }
+
+    .title-pop {
+      display: inline-block;
+      color: transparent;
+      background: linear-gradient(90deg, #fff8d8, #d8ff67 32%, #78d8ff 66%, #ff7eb2);
+      -webkit-background-clip: text;
+      background-clip: text;
+      filter: drop-shadow(0 18px 48px rgba(120,216,255,.14));
+    }
+
+    .lead {
+      max-width: 630px;
+      color: #d7d0c6;
+      font-size: clamp(17px, 1.6vw, 21px);
+      line-height: 1.55;
+      margin: 0 0 26px;
+    }
+
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+
+    .proof {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      max-width: 640px;
+    }
+
+    .proof div {
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+      min-width: 0;
+    }
+
+    .proof strong { display: block; font-size: 22px; color: #fff6d8; }
+    .proof span { display: block; color: var(--muted); font-size: 13px; margin-top: 4px; line-height: 1.35; }
+
+    .product {
+      position: relative;
+      align-self: stretch;
+      min-height: 620px;
+      display: flex;
+      align-items: center;
+      perspective: 1400px;
+    }
+
+    .app-frame {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 8px;
+      background: linear-gradient(145deg, rgba(255,255,255,.14), rgba(255,255,255,.055));
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.14);
+      overflow: hidden;
+      transform: rotateX(3deg) rotateY(-8deg) rotateZ(1deg);
+      transform-origin: center;
+    }
+
+    .app-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(0,0,0,.22);
+    }
+
+    .dots { display: flex; gap: 6px; }
+    .dots i { width: 10px; height: 10px; border-radius: 50%; background: #ff6f91; }
+    .dots i:nth-child(2) { background: #ffc766; }
+    .dots i:nth-child(3) { background: #88f0b0; }
+    .search {
+      flex: 1;
+      max-width: 390px;
+      padding: 8px 12px;
+      border-radius: 7px;
+      background: rgba(255,255,255,.08);
+      color: var(--muted);
+      font-size: 13px;
+      border: 1px solid rgba(255,255,255,.1);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 165px 1fr;
+      min-height: 535px;
+    }
+
+    .sidebar {
+      padding: 14px 10px;
+      border-right: 1px solid var(--line);
+      background: rgba(0,0,0,.18);
+    }
+
+    .side-link {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      padding: 10px;
+      border-radius: 7px;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .side-link.active { background: rgba(216,255,103,.13); color: var(--ink); border: 1px solid rgba(216,255,103,.18); }
+    .icon {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+      display: inline-block;
+    }
+
+    .workspace { padding: 16px; }
+    .dash-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .dash-head h2 { margin: 0; font-size: 22px; letter-spacing: 0; }
+    .dash-head p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid rgba(136,240,176,.24);
+      color: #caffdc;
+      background: rgba(136,240,176,.11);
+      border-radius: 999px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .metric, .panel, .story-card, .price, .quote, .step, .integrations li {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+    .metric { padding: 12px; min-height: 104px; }
+    .label { color: var(--muted); font-size: 12px; display: flex; justify-content: space-between; gap: 8px; }
+    .value { display: block; margin-top: 10px; font-size: 27px; font-weight: 850; letter-spacing: 0; }
+    .delta { color: var(--green); font-size: 12px; margin-top: 6px; display: block; }
+
+    .panel { padding: 14px; }
+    .chart-wrap { display: grid; grid-template-columns: 1fr 150px; gap: 10px; }
+    .chart {
+      height: 184px;
+      position: relative;
+      border-radius: 7px;
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px) 0 0/100% 25%,
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px) 0 0/16.66% 100%,
+        rgba(0,0,0,.16);
+    }
+
+    .chart svg { width: 100%; height: 100%; display: block; }
+    .chart path.line {
+      fill: none;
+      stroke: url(#lineGrad);
+      stroke-width: 4;
+      stroke-linecap: round;
+      filter: drop-shadow(0 0 14px rgba(120,216,255,.25));
+      stroke-dasharray: 760;
+      animation: draw 2.4s ease both;
+    }
+
+    .chart path.area { fill: url(#areaGrad); opacity: .86; }
+    @keyframes draw { from { stroke-dashoffset: 760; } to { stroke-dashoffset: 0; } }
+
+    .alerts { display: grid; gap: 8px; }
+    .alert {
+      padding: 10px;
+      border-radius: 7px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.11);
+      font-size: 12px;
+      color: #ddd6ca;
+    }
+
+    .alert b { display: block; color: var(--ink); margin-bottom: 3px; }
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .pipe {
+      min-height: 76px;
+      border-radius: 7px;
+      padding: 9px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .pipe strong { color: var(--ink); font-size: 18px; }
+    .float-card {
+      position: absolute;
+      right: -10px;
+      bottom: 56px;
+      width: min(260px, 45%);
+      border: 1px solid rgba(255,255,255,.19);
+      border-radius: 8px;
+      background: rgba(13,17,23,.78);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 22px 60px rgba(0,0,0,.38);
+      padding: 12px;
+      transform: rotateY(-8deg) rotateZ(-2deg);
+    }
+
+    .float-card h3 { margin: 0 0 8px; font-size: 14px; }
+    .float-card p { margin: 0 0 10px; color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .mini-bars { display: grid; gap: 6px; }
+    .mini-bars span { height: 8px; border-radius: 999px; background: rgba(255,255,255,.12); overflow: hidden; }
+    .mini-bars i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--pink), var(--amber), var(--lime)); }
+
+    .section {
+      padding: 80px 0;
+      position: relative;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+      gap: 24px;
+      align-items: end;
+      margin-bottom: 28px;
+    }
+
+    .kicker { color: var(--lime); text-transform: uppercase; font-weight: 850; font-size: 12px; letter-spacing: .12em; }
+    h2.big {
+      font-size: clamp(34px, 5.2vw, 72px);
+      line-height: .95;
+      margin: 8px 0 0;
+      letter-spacing: 0;
+    }
+
+    .section-head p { color: #d1c9bc; line-height: 1.55; margin: 0; font-size: 17px; }
+
+    .story-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 12px;
+    }
+
+    .story-card {
+      min-height: 360px;
+      padding: 24px;
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(135deg, rgba(255,255,255,.11), rgba(255,255,255,.055));
+    }
+
+    .story-card h3 { margin: 0; font-size: 27px; }
+    .story-card p { max-width: 520px; color: var(--muted); line-height: 1.55; }
+    .orbit {
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      right: -80px;
+      bottom: -110px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 50%;
+      animation: spin 18s linear infinite;
+    }
+
+    .orbit:before, .orbit:after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--lime), var(--blue));
+      box-shadow: 0 0 36px rgba(120,216,255,.28);
+    }
+
+    .orbit:before { width: 38px; height: 38px; top: 58px; left: 58px; }
+    .orbit:after { width: 18px; height: 18px; right: 38px; bottom: 92px; background: var(--pink); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .feature-list { display: grid; gap: 12px; }
+    .step { padding: 20px; min-height: 112px; background: rgba(255,255,255,.07); }
+    .step span { color: var(--amber); font-weight: 850; font-size: 12px; }
+    .step h3 { margin: 8px 0 6px; font-size: 20px; }
+    .step p { margin: 0; color: var(--muted); line-height: 1.45; }
+
+    .marquee {
+      border-block: 1px solid var(--line);
+      overflow: hidden;
+      background: rgba(255,255,255,.045);
+    }
+
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      animation: slide 26s linear infinite;
+    }
+
+    .marquee span {
+      padding: 18px 28px;
+      color: #fff7df;
+      font-weight: 850;
+      font-size: 18px;
+      white-space: nowrap;
+    }
+
+    @keyframes slide { to { transform: translateX(-50%); } }
+
+    .integrations {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+    }
+
+    .integrations li {
+      min-height: 100px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: #eee2cf;
+      font-weight: 780;
+      background: rgba(255,255,255,.065);
+    }
+
+    .pricing {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .price {
+      padding: 24px;
+      background: rgba(255,255,255,.07);
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .price.featured {
+      background:
+        linear-gradient(145deg, rgba(216,255,103,.15), rgba(120,216,255,.1)),
+        rgba(255,255,255,.08);
+      border-color: rgba(216,255,103,.34);
+      transform: translateY(-14px);
+    }
+
+    .price h3 { margin: 0 0 8px; font-size: 25px; }
+    .price p { color: var(--muted); line-height: 1.45; margin: 0 0 18px; }
+    .amount { font-size: 45px; font-weight: 900; margin: 4px 0 18px; }
+    .amount small { font-size: 14px; color: var(--muted); font-weight: 600; }
+    .price ul { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 12px; color: #e7dece; }
+    .price li:before { content: "+"; color: var(--green); font-weight: 900; margin-right: 9px; }
+    .price .btn { margin-top: auto; width: 100%; }
+
+    .quote-row {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .quote { padding: 28px; background: rgba(255,255,255,.07); }
+    .quote blockquote {
+      margin: 0;
+      font-size: clamp(24px, 3.2vw, 43px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+    .quote p { color: var(--muted); line-height: 1.55; }
+
+    .cta {
+      padding: 78px 0 54px;
+      text-align: center;
+    }
+
+    .cta-box {
+      border: 1px solid rgba(255,255,255,.17);
+      border-radius: 8px;
+      padding: clamp(28px, 6vw, 70px);
+      background:
+        linear-gradient(135deg, rgba(255,111,168,.14), rgba(120,216,255,.13) 44%, rgba(216,255,103,.12)),
+        rgba(255,255,255,.065);
+      box-shadow: var(--shadow);
+    }
+
+    .cta h2 {
+      font-size: clamp(38px, 6.5vw, 86px);
+      line-height: .92;
+      letter-spacing: 0;
+      margin: 0 auto 16px;
+      max-width: 900px;
+    }
+
+    .cta p { max-width: 650px; margin: 0 auto 24px; color: #ded5c6; line-height: 1.55; font-size: 18px; }
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 24px 0 36px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    footer .shell {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 980px) {
+      .nav { grid-template-columns: 1fr auto; }
+      .navlinks { display: none; }
+      .hero { grid-template-columns: 1fr; padding-top: 46px; }
+      .product { min-height: 520px; }
+      .app-frame { transform: none; }
+      .section-head, .story-grid, .quote-row { grid-template-columns: 1fr; }
+      .integrations { grid-template-columns: repeat(3, 1fr); }
+      .pricing { grid-template-columns: 1fr; }
+      .price.featured { transform: none; }
+    }
+
+    @media (max-width: 680px) {
+      .shell { width: min(100% - 24px, 1180px); }
+      .topbar { top: 8px; margin-top: 8px; }
+      .nav-actions .ghost { display: none; }
+      .hero { padding-top: 28px; }
+      h1 { font-size: clamp(42px, 15vw, 68px); }
+      .proof { grid-template-columns: 1fr; }
+      .product { min-height: auto; }
+      .app { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .metric-grid, .chart-wrap, .pipeline { grid-template-columns: 1fr; }
+      .float-card { position: static; width: auto; margin-top: 12px; transform: none; }
+      .section { padding: 58px 0; }
+      .integrations { grid-template-columns: repeat(2, 1fr); }
+      .app-top { align-items: flex-start; }
+      .search { display: none; }
+      .dash-head, footer .shell { flex-direction: column; display: flex; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *:before, *:after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <header class="topbar shell">
+    <nav class="nav" aria-label="Primary navigation">
+      <a class="brand" href="#top" aria-label="HelioGrid home"><span class="mark" aria-hidden="true"></span><span>HelioGrid</span></a>
+      <div class="navlinks">
+        <a href="#platform">Platform</a>
+        <a href="#signals">Signals</a>
+        <a href="#integrations">Integrations</a>
+        <a href="#pricing">Pricing</a>
+      </div>
+      <div class="nav-actions">
+        <a class="btn ghost" href="#pricing">Plans</a>
+        <a class="btn primary" href="#demo">Launch Demo</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero shell">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="pulse" aria-hidden="true"></span> Live revenue command center for modern SaaS teams</div>
+        <h1>Run your GTM engine on <span class="title-pop">actual signal.</span></h1>
+        <p class="lead">HelioGrid fuses product usage, pipeline movement, support risk, and finance signals into one operational layer. See churn before it blooms, route expansion before competitors wake up, and give every team the same source of truth.</p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#demo">Start the live tour</a>
+          <a class="btn" href="#platform">Explore the system</a>
+        </div>
+        <div class="proof" aria-label="Customer results">
+          <div><strong>31%</strong><span>faster expansion identification across active accounts</span></div>
+          <div><strong>4.8h</strong><span>saved per manager every week on forecast synthesis</span></div>
+          <div><strong>97%</strong><span>signal coverage from CRM, product, billing, and support</span></div>
+        </div>
+      </div>
+
+      <div class="product" id="demo" aria-label="Product preview">
+        <div class="app-frame">
+          <div class="app-top">
+            <div class="dots" aria-hidden="true"><i></i><i></i><i></i></div>
+            <div class="search">Search accounts, risks, plays, owners...</div>
+            <div class="status-pill"><span class="pulse" aria-hidden="true"></span> Syncing 18 sources</div>
+          </div>
+          <div class="app">
+            <aside class="sidebar" aria-label="Product menu">
+              <div class="side-link active"><span class="icon">◈</span> Mission Control</div>
+              <div class="side-link"><span class="icon">◇</span> Accounts</div>
+              <div class="side-link"><span class="icon">⬡</span> Forecast</div>
+              <div class="side-link"><span class="icon">✦</span> Plays</div>
+              <div class="side-link"><span class="icon">▣</span> Board Pack</div>
+            </aside>
+            <section class="workspace">
+              <div class="dash-head">
+                <div>
+                  <h2>Revenue Health</h2>
+                  <p>North America mid-market cohort, live at 09:42</p>
+                </div>
+                <span class="status-pill">+18.4% momentum</span>
+              </div>
+              <div class="metric-grid">
+                <div class="metric"><span class="label">Expansion ready <span>72 accts</span></span><span class="value">$4.2M</span><span class="delta">+12 signals this week</span></div>
+                <div class="metric"><span class="label">Churn defended <span>Q3</span></span><span class="value">$890K</span><span class="delta">22 plays active</span></div>
+                <div class="metric"><span class="label">Forecast confidence <span>AI</span></span><span class="value">94%</span><span class="delta">6 pts over plan</span></div>
+              </div>
+              <div class="panel">
+                <div class="chart-wrap">
+                  <div class="chart" aria-label="Revenue health chart">
+                    <svg viewBox="0 0 560 220" role="img" aria-label="Rising revenue health line">
+                      <defs>
+                        <linearGradient id="lineGrad" x1="0" x2="1">
+                          <stop offset="0" stop-color="#ff6fa8"/>
+                          <stop offset=".45" stop-color="#ffc766"/>
+                          <stop offset="1" stop-color="#78d8ff"/>
+                        </linearGradient>
+                        <linearGradient id="areaGrad" x1="0" x2="0" y1="0" y2="1">
+                          <stop offset="0" stop-color="#78d8ff" stop-opacity=".34"/>
+                          <stop offset="1" stop-color="#78d8ff" stop-opacity="0"/>
+                        </linearGradient>
+                      </defs>
+                      <path class="area" d="M0 176 C54 150 66 124 118 132 C166 140 188 70 236 83 C284 96 308 132 356 94 C402 58 438 74 472 48 C504 24 534 34 560 18 L560 220 L0 220 Z"/>
+                      <path class="line" d="M0 176 C54 150 66 124 118 132 C166 140 188 70 236 83 C284 96 308 132 356 94 C402 58 438 74 472 48 C504 24 534 34 560 18"/>
+                    </svg>
+                  </div>
+                  <div class="alerts">
+                    <div class="alert"><b>Expansion play</b> Atlas Labs crossed 86% seat saturation.</div>
+                    <div class="alert"><b>Risk reversal</b> Meridian support sentiment recovered.</div>
+                    <div class="alert"><b>Forecast note</b> 3 deals need legal owner by Friday.</div>
+                  </div>
+                </div>
+                <div class="pipeline" aria-label="Pipeline stages">
+                  <div class="pipe"><span>Discover</span><strong>248</strong></div>
+                  <div class="pipe"><span>Qualify</span><strong>91</strong></div>
+                  <div class="pipe"><span>Commit</span><strong>38</strong></div>
+                  <div class="pipe"><span>Renew</span><strong>164</strong></div>
+                  <div class="pipe"><span>Expand</span><strong>57</strong></div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+        <aside class="float-card" aria-label="AI recommendation">
+          <h3>Next best move</h3>
+          <p>Offer finance-seat bundle to 14 accounts with usage acceleration and procurement overlap.</p>
+          <div class="mini-bars" aria-hidden="true">
+            <span><i style="width:86%"></i></span>
+            <span><i style="width:63%"></i></span>
+            <span><i style="width:74%"></i></span>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>Forecast intelligence</span><span>Renewal radar</span><span>Product-qualified expansion</span><span>Board-ready reporting</span><span>Signal-based routing</span><span>Customer health graph</span>
+        <span>Forecast intelligence</span><span>Renewal radar</span><span>Product-qualified expansion</span><span>Board-ready reporting</span><span>Signal-based routing</span><span>Customer health graph</span>
+      </div>
+    </div>
+
+    <section class="section shell" id="platform">
+      <div class="section-head">
+        <div><span class="kicker">Platform</span><h2 class="big">Every team gets the same weather system.</h2></div>
+        <p>HelioGrid watches the operational atmosphere of every account: adoption shifts, buying committee movement, deal pressure, support sentiment, payment risk, and renewal timing. Your teams stop arguing about spreadsheets and start acting on shared signal.</p>
+      </div>
+      <div class="story-grid">
+        <article class="story-card">
+          <h3>Signal graph, not another dashboard graveyard.</h3>
+          <p>Connect your stack once. HelioGrid normalizes account events into a living graph that ranks revenue moments by timing, confidence, and owner. The system learns which signals actually become retention, expansion, and forecast accuracy.</p>
+          <div class="orbit" aria-hidden="true"></div>
+        </article>
+        <div class="feature-list">
+          <article class="step"><span>01</span><h3>Unify scattered context</h3><p>CRM, warehouse, product analytics, billing, support, docs, and calls become one account timeline.</p></article>
+          <article class="step"><span>02</span><h3>Prioritize action</h3><p>Teams get ranked plays with why-now context, expected impact, and accountable owners.</p></article>
+          <article class="step"><span>03</span><h3>Explain the forecast</h3><p>Leadership sees what changed, what is at risk, and what needs intervention before the meeting.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section shell" id="signals">
+      <div class="section-head">
+        <div><span class="kicker">Signals</span><h2 class="big">Designed for operators who hate vague green dots.</h2></div>
+        <p>Every score is traceable. Every recommendation includes source events. Every alert has an owner, a play, and a financial consequence.</p>
+      </div>
+      <div class="quote-row">
+        <article class="quote">
+          <blockquote>“It replaced three weekly meetings with one live operating picture.”</blockquote>
+          <p>Revenue leaders use HelioGrid to collapse noisy reporting rituals into crisp operating decisions, while reps and CSMs get precise next steps instead of motivational fog.</p>
+        </article>
+        <article class="story-card">
+          <h3>Board pack in 90 seconds.</h3>
+          <p>Generate a clean readout for pipeline health, renewals, expansion, and account risk with source-linked changes since the last meeting.</p>
+          <div class="mini-bars" aria-hidden="true">
+            <span><i style="width:92%"></i></span>
+            <span><i style="width:79%"></i></span>
+            <span><i style="width:58%"></i></span>
+            <span><i style="width:84%"></i></span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section shell" id="integrations">
+      <div class="section-head">
+        <div><span class="kicker">Integrations</span><h2 class="big">The stack you already bought, finally behaving.</h2></div>
+        <p>Prebuilt connectors ingest live state, historical behavior, and messy human context without forcing another migration.</p>
+      </div>
+      <ul class="integrations">
+        <li>Salesforce</li><li>HubSpot</li><li>Stripe</li><li>Snowflake</li><li>Segment</li><li>Zendesk</li>
+        <li>Gong</li><li>Intercom</li><li>Slack</li><li>Linear</li><li>BigQuery</li><li>Looker</li>
+      </ul>
+    </section>
+
+    <section class="section shell" id="pricing">
+      <div class="section-head">
+        <div><span class="kicker">Pricing</span><h2 class="big">Start sharp. Scale without drama.</h2></div>
+        <p>Transparent plans for teams that want operational intelligence in production quickly, with room for enterprise controls when the motion matures.</p>
+      </div>
+      <div class="pricing">
+        <article class="price">
+          <h3>Signal</h3>
+          <p>For focused teams centralizing account health and renewal risk.</p>
+          <div class="amount">$79<small>/seat</small></div>
+          <ul><li>8 core integrations</li><li>Account health graph</li><li>Renewal radar</li><li>Slack alerts</li></ul>
+          <a class="btn" href="#demo">Choose Signal</a>
+        </article>
+        <article class="price featured">
+          <h3>Command</h3>
+          <p>For revenue organizations turning signal into weekly operating rhythm.</p>
+          <div class="amount">$129<small>/seat</small></div>
+          <ul><li>Unlimited playbooks</li><li>Forecast explanations</li><li>Expansion scoring</li><li>Board pack generator</li></ul>
+          <a class="btn primary" href="#demo">Choose Command</a>
+        </article>
+        <article class="price">
+          <h3>Enterprise</h3>
+          <p>For global SaaS teams with complex data, security, and governance needs.</p>
+          <div class="amount">Custom</div>
+          <ul><li>Custom objects</li><li>SSO and audit logs</li><li>Data residency controls</li><li>Dedicated success pod</li></ul>
+          <a class="btn" href="#demo">Talk to sales</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="cta shell">
+      <div class="cta-box">
+        <h2>Turn scattered SaaS signals into a live operating advantage.</h2>
+        <p>Bring the messy truth of your business into one beautiful control plane, then let every team move with the same map.</p>
+        <div class="hero-actions" style="justify-content:center;margin-bottom:0">
+          <a class="btn primary" href="#top">Open HelioGrid</a>
+          <a class="btn" href="#platform">See capabilities</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell">
+      <span>© 2026 HelioGrid Systems</span>
+      <span>Operational intelligence for SaaS revenue teams</span>
+    </div>
+  </footer>
+
+  <script>
+    const frame = document.querySelector('.app-frame');
+    const product = document.querySelector('.product');
+    if (frame && product && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      product.addEventListener('pointermove', (event) => {
+        const rect = product.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width - 0.5;
+        const y = (event.clientY - rect.top) / rect.height - 0.5;
+        frame.style.transform = `rotateX(${3 - y * 5}deg) rotateY(${-8 + x * 7}deg) rotateZ(1deg)`;
+      });
+      product.addEventListener('pointerleave', () => {
+        frame.style.transform = 'rotateX(3deg) rotateY(-8deg) rotateZ(1deg)';
+      });
+    }
+  </script>
+</body>
+</html>
